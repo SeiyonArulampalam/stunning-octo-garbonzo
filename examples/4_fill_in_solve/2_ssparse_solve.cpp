@@ -7,11 +7,12 @@ void cholmod_solve() {
   cholmod_start(&common);
 
   // Define the input matrix A in CSC format
-  int n = 4;                                         // Matrix dimension
-  int nzmax = 7;                                     // Number of nonzeros
-  int Ap[] = {0, 3, 5, 6, 7};                        // Column pointers
-  int Ai[] = {0, 1, 3, 1, 2, 2, 3};                  // Row indices
-  double Ax[] = {4.0, 1.0, 1.0, 3.0, 1.0, 2.0, 5.0}; // Values (can be dummy)
+  // actually need to put whole matrix in not just lower triangular part
+  size_t n = 4;                                         // Matrix dimension
+  int nzmax = 10;                                     // Number of nonzeros
+  int Ap[] = {0, 3, 6, 8, 10};                        // Column pointers
+  int Ai[] = {0, 1, 3, 0, 1, 2, 1, 2, 1, 3};                  // Row indices
+  double Ax[] = {3, 1, 1, 1, 2, -1, -1, 4, 1, 3}; // Values (can be dummy)
 
   // Allocate the sparse matrix
   cholmod_sparse *A =
@@ -22,10 +23,10 @@ void cholmod_solve() {
   A->stype = -1; // lower triangular
 
   // define the RHS as well
-  size_t n = 4;
+  // size_t n = 4;
   cholmod_dense *b = cholmod_allocate_dense(n, 1, n, CHOLMOD_REAL, &common);
   double *b_data = (double *)b->x;
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < n; i++) {
     b_data[i] = i + 1;
   }
 
@@ -68,8 +69,13 @@ void cholmod_solve() {
   // now we solve the system
   cholmod_dense *x = cholmod_solve(CHOLMOD_A, L, b, &common);
 
+  double *x_data = (double*)x->x;
   for (int i = 0; i < 4; i++) {
-    printf("x[%d] = %.8e\n", i, x[i]);
+    printf("b[%d] = %.8e\n", i, b_data[i]);
+  }
+  
+  for (int i = 0; i < 4; i++) {
+    printf("x[%d] = %.8e\n", i, x_data[i]);
   }
 
   // Clean up
